@@ -18,6 +18,8 @@ function loadIssue() {
 
   var ctx = window.AdaptavistBridgeContext.context;
   console.log('Context:', ctx);
+   var ctx2 = AdaptavistBridgeContext.context;
+  console.log('Context trefjkl:', ctx2);
 
   /* if (!ctx.issueKey) {
     setText('col1-value', 'No issueKey in context');
