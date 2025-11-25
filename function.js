@@ -19,10 +19,10 @@ function loadIssue() {
   var ctx = window.AdaptavistBridgeContext.context;
   console.log('Context:', ctx);
 
-  if (!ctx.issueKey) {
+  /* if (!ctx.issueKey) {
     setText('col1-value', 'No issueKey in context');
     return;
-  }
+  } */
 
   window.AdaptavistBridge.request({
     url: `/rest/api/2/issue/AP-1`,
