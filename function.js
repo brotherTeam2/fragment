@@ -25,7 +25,7 @@ function loadIssue() {
   }
 
   window.AdaptavistBridge.request({
-    url: `/rest/api/2/issue/${ctx.issueKey}`,
+    url: `/rest/api/2/issue/AP-1`,
     type: 'GET'
   })
     .then(function (issue) {
