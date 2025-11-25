@@ -16,7 +16,7 @@ function loadIssue() {
     return;
   }
 
-  var ctx = window.AdaptavistBridgeContext.context || {};
+  var ctx = window.AdaptavistBridgeContext.context;
   console.log('Context:', ctx);
 
   if (!ctx.issueKey) {
