@@ -1,6 +1,25 @@
-#info {
+#issueTable {
+  border-collapse: collapse;
+  width: 100%;
   font-family: Arial, sans-serif;
-  color: #2864cc;
-  font-size: 1.15em;
-  margin: 12px 0;
+}
+
+#issueTable th,
+#issueTable td {
+  border: 1px solid #ddd;
+  padding: 6px 10px;
+  text-align: left;
+}
+
+/* уникальные цвета для колонок */
+.col1 {
+  background-color: #e6f4ff; /* голубой */
+}
+
+.col2 {
+  background-color: #e8ffe6; /* зелёный */
+}
+
+.col3 {
+  background-color: #fff4e6; /* оранжевый */
 }
