@@ -1,8 +1,8 @@
 // Скрипт почти 1 в 1 как в доке, только без <script> тегов
-console.log(window.AdaptavistBridgeContext && window.AdaptavistBridgeContext.context);
+console.log(AdaptavistBridgeContext && AdaptavistBridgeContext.context);
 
-window.AdaptavistBridge.request({
-  url: `/rest/api/2/issue/${window.AdaptavistBridgeContext.context.issueKey}`,
+AdaptavistBridge.request({
+  url: `/rest/api/2/issue/${AdaptavistBridgeContext.context.issueKey}`,
   type: 'GET'
 })
   .then(function (issue) {
