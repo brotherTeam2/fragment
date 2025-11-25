@@ -1,6 +1,6 @@
 // Для отладки посмотри консоль фрагмента в браузере (DevTools)
 console.log('Bridge:', window.AdaptavistBridge);
-console.log('BridgeContext:', window.AdaptavistBridgeContext);
+console.log('BridgeContext:', window.AdaptavistBridgeContext.context.issueKey);
 
 function setText(id, text) {
   var el = document.getElementById(id);
