@@ -11,5 +11,5 @@ AdaptavistBridge.request({
   })
   .catch(function (e) {
     console.error('Error loading issue', e);
-    document.getElementById("col1-value").textContent = 'Error loading issue';
+    document.getElementById("col1-value").textContent = 'Error loading issue2';
   });
