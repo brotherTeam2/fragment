@@ -128,7 +128,7 @@
 
     // REST helpers
     function fetchIssue(key, cb) {
-      window.AdaptavistBridge.request({
+      AdaptavistBridge.request({
         url: `/rest/api/2/issue/${key}`,
         type: 'GET'
       }).then(function(issue){ cb(issue); });
@@ -136,8 +136,8 @@
 
     function main() {
       // Get current issueKey from BridgeContext (with fallback)
-      var ctx = window.AdaptavistBridgeContext && window.AdaptavistBridgeContext.context || {};
-      var issueKey = ctx.issueKey || (window.location.pathname.match(/browse\/([A-Z0-9\-]+)/)||[])[1] || "AP-1";
+      var ctx = AdaptavistBridgeContext && AdaptavistBridgeContext.context || {};
+      var issueKey = ctx.issueKey || (location.pathname.match(/browse\/([A-Z0-9\-]+)/)||[])[1] || "AP-1";
       fetchIssue(issueKey,function(issue){
         // Parents (epic/parent/linked issues — basic: parent/subtasks)
         var parents = [];
@@ -181,7 +181,7 @@
     // Wait for bridge context
     document.addEventListener("DOMContentLoaded", function(){
       function waitContext(i){ 
-        if(window.AdaptavistBridge && window.AdaptavistBridgeContext){ main(); return; }
+        if(AdaptavistBridge && AdaptavistBridgeContext){ main(); return; }
         if(i>30) { document.body.innerHTML = "Could not load issue context."; return;}
         setTimeout(function(){waitContext(i+1);},100);
       }
