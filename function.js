@@ -1,7 +1,8 @@
-// Для отладки посмотри консоль фрагмента в браузере (DevTools)
+// Отладочные логи
 console.log('Bridge:', window.AdaptavistBridge);
-console.log('BridgeContext:', window.AdaptavistBridgeContext.context.issueKey);
+console.log('BridgeContext raw:', window.AdaptavistBridgeContext);
 
+// Универсальная установка текста
 function setText(id, text) {
   var el = document.getElementById(id);
   if (el) {
@@ -9,25 +10,42 @@ function setText(id, text) {
   }
 }
 
-function loadIssue() {
+// Ждём появления контекста от bridge
+function waitForContext(tries) {
+  tries = tries || 0;
+
+  // Нет bridge вообще
   if (!window.AdaptavistBridge || !window.AdaptavistBridgeContext) {
-    console.error('Bridge not available yet');
-    setText('col1-value', 'Bridge not available');
+    if (tries === 0) {
+      console.warn('Bridge or BridgeContext not ready yet');
+    }
+  } else if (window.AdaptavistBridgeContext.context) {
+    console.log('Context ready:', window.AdaptavistBridgeContext.context);
+    loadIssueWithContext(window.AdaptavistBridgeContext.context);
     return;
   }
 
-  var ctx = window.AdaptavistBridgeContext.context;
-  console.log('Context:', window.AdaptavistBridgeContext.context);
-   var ctx2 = AdaptavistBridgeContext.context;
-  console.log('Context trefjkl:', AdaptavistBridgeContext.context);
-
-  /* if (!ctx.issueKey) {
-    setText('col1-value', 'No issueKey in context');
+  if (tries > 20) { // ~2 секунды ожидания
+    console.error('No context from bridge after waiting');
+    setText('col1-value', 'No context from bridge');
     return;
-  } */
+  }
+
+  setTimeout(function () {
+    waitForContext(tries + 1);
+  }, 100);
+}
+
+// Основная логика запроса к Jira
+function loadIssueWithContext(ctx) {
+  // Если issueKey нет в контексте — можно использовать хардкод AP-1, как у тебя,
+  // но при нормальной работе он должен быть
+  var issueKey = ctx && ctx.issueKey ? ctx.issueKey : 'AP-1';
+
+  console.log('Using issueKey:', issueKey);
 
   window.AdaptavistBridge.request({
-    url: `/rest/api/2/issue/AP-1`,
+    url: `/rest/api/2/issue/${issueKey}`,
     type: 'GET'
   })
     .then(function (issue) {
@@ -43,8 +61,9 @@ function loadIssue() {
     });
 }
 
-// ждём, пока DOM и bridge будут готовы
+// Старт после загрузки DOM
 document.addEventListener('DOMContentLoaded', function () {
-  // небольшая задержка, чтобы успел инициализироваться bridge
-  setTimeout(loadIssue, 200);
+  setTimeout(function () {
+    waitForContext(0);
+  }, 200);
 });
