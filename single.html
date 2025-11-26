@@ -95,9 +95,9 @@ console.log('BridgeContext 2:', AdaptavistBridgeContext);
       })
         .then(function (issue) {
           console.log('Issue:', issue);  
-          setText('col1-value', issue.key);
-          setText('col2-value', issue.fields.status ? issue.fields.status.name : 'No status');
-          setText('col3-value', issue.fields.assignee ? issue.fields.assignee.displayName : 'Unassigned');
+          setText('col1-r1-value', issue.issuelinks[0].outwardIssue.fields.summary);
+          setText('col2-r1-value', issue.fields.status ? issue.fields.status.name : 'No status');
+          setText('col3-r1-value', issue.fields.assignee ? issue.fields.assignee.displayName : 'Unassigned');
         })
         .catch(function (err) {
           setText('col1-value', 'Error loading issue');
