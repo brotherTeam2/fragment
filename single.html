@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Jira Issue Table Fragment</title>
+  <style>
+    #issueTable {
+      border-collapse: collapse;
+      width: 100%;
+      font-family: Arial, sans-serif;
+    }
+    #issueTable th,
+    #issueTable td {
+      border: 1px solid #ddd;
+      padding: 6px 10px;
+      text-align: left;
+    }
+    .col1 { background-color: #e6f4ff; }
+    .col2 { background-color: #e8ffe6; }
+    .col3 { background-color: #fff4e6; }
+  </style>
+</head>
+<body>
+  <div>
+    <table id="issueTable">
+      <thead>
+        <tr>
+          <th class="col1">col1</th>
+          <th class="col2">col2</th>
+          <th class="col3">col3</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="col1" id="col1-value">Loading...</td>
+          <td class="col2" id="col2-value">Loading...</td>
+          <td class="col3" id="col3-value">Loading...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    function setText(id, text) {
+      var el = document.getElementById(id);
+      if (el) el.textContent = text;
+    }
+
+    function waitForContext(tries) {
+      tries = tries || 0;
+
+      if (window.AdaptavistBridge && window.AdaptavistBridgeContext && window.AdaptavistBridgeContext.context) {
+        loadIssueWithContext(window.AdaptavistBridgeContext.context);
+        return;
+      }
+      if (tries > 20) {
+        setText('col1-value', 'No context from bridge');
+        setText('col2-value', 'No context from bridge');
+        setText('col3-value', 'No context from bridge');
+        return;
+      }
+      setTimeout(function () { waitForContext(tries + 1); }, 100);
+    }
+
+    function loadIssueWithContext(ctx) {
+      var issueKey = ctx && ctx.issueKey ? ctx.issueKey : 'AP-1';
+      window.AdaptavistBridge.request({
+        url: `/rest/api/2/issue/${issueKey}`,
+        type: 'GET'
+      })
+        .then(function (issue) {
+          setText('col1-value', issue.key);
+          setText('col2-value', issue.fields.status ? issue.fields.status.name : 'No status');
+          setText('col3-value', issue.fields.assignee ? issue.fields.assignee.displayName : 'Unassigned');
+        })
+        .catch(function (err) {
+          setText('col1-value', 'Error loading issue');
+          setText('col2-value', 'Error loading issue');
+          setText('col3-value', 'Error loading issue');
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      setTimeout(function () { waitForContext(0); }, 200);
+    });
+  </script>
+</body>
+</html>
