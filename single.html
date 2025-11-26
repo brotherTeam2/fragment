@@ -95,7 +95,7 @@
       console.log('Issue:', issue);
       console.log('Links:', issue.issuelinks);
 
-      var links = issue.issuelinks || [];
+      var links = issue.fields.issuelinks || [];
       for (var i = 0; i < 5; i++) {
         if (links[i] && links[i].outwardIssue) {
           var linkedIssue = links[i].outwardIssue;
