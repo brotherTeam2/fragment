@@ -62,53 +62,65 @@
   </div>
 
   <script>
-    function setText(id, text) {
-      var el = document.getElementById(id);
-      if (el) el.textContent = text;
+  function setText(id, text) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = text;
+  }
+
+  function waitForContext(tries) {
+    tries = tries || 0;
+
+    if (AdaptavistBridge && AdaptavistBridgeContext && AdaptavistBridgeContext.context) {
+      loadIssueWithContext(AdaptavistBridgeContext.context);
+      return;
     }
-    console.log('Bridge:', AdaptavistBridge);
-console.log('BridgeContext raw:', window.AdaptavistBridgeContext);
-console.log('BridgeContext 2:', AdaptavistBridgeContext);
-
-
-    function waitForContext(tries) {
-      tries = tries || 0;
-
-      if (AdaptavistBridge && AdaptavistBridgeContext && AdaptavistBridgeContext.context) {
-        loadIssueWithContext(AdaptavistBridgeContext.context);
-        return;
+    if (tries > 20) {
+      for (var i = 1; i <= 5; i++) {
+        setText(`col1-r${i}-value`, 'No context from bridge');
+        setText(`col2-r${i}-value`, 'No context from bridge');
+        setText(`col3-r${i}-value`, 'No context from bridge');
       }
-      if (tries > 20) {
-        setText('col1-value', 'No context from bridge');
-        setText('col2-value', 'No context from bridge');
-        setText('col3-value', 'No context from bridge');
-        return;
+      return;
+    }
+    setTimeout(function () { waitForContext(tries + 1); }, 100);
+  }
+
+  function loadIssueWithContext(ctx) {
+    var issueKey = ctx && ctx.issueKey ? ctx.issueKey : 'AP-1';
+    AdaptavistBridge.request({
+      url: `/rest/api/2/issue/${issueKey}`,
+      type: 'GET'
+    })
+    .then(function(issue) {
+      console.log('Issue:', issue);
+
+      var links = issue.issuelinks || [];
+      for (var i = 0; i < 5; i++) {
+        if (links[i] && links[i].outwardIssue) {
+          var linkedIssue = links[i].outwardIssue;
+          setText(`col1-r${i+1}-value`, linkedIssue.fields.summary || 'No summary');
+          setText(`col2-r${i+1}-value`, linkedIssue.fields.assignee ? linkedIssue.fields.assignee.displayName : 'Unassigned');
+          setText(`col3-r${i+1}-value`, linkedIssue.fields.status ? linkedIssue.fields.status.name : 'No status');
+        } else {
+          setText(`col1-r${i+1}-value`, 'No linked issue');
+          setText(`col2-r${i+1}-value`, '');
+          setText(`col3-r${i+1}-value`, '');
+        }
       }
-      setTimeout(function () { waitForContext(tries + 1); }, 100);
-    }
-
-    function loadIssueWithContext(ctx) {
-      var issueKey = ctx && ctx.issueKey ? ctx.issueKey : 'AP-1';
-      AdaptavistBridge.request({
-        url: `/rest/api/2/issue/${issueKey}`,
-        type: 'GET'
-      })
-        .then(function (issue) {
-          console.log('Issue:', issue);  
-          setText('col1-r1-value', issue.issuelinks[0].outwardIssue.fields.summary);
-          setText('col2-r1-value', issue.fields.status ? issue.fields.status.name : 'No status');
-          setText('col3-r1-value', issue.fields.assignee ? issue.fields.assignee.displayName : 'Unassigned');
-        })
-        .catch(function (err) {
-          setText('col1-value', 'Error loading issue');
-          setText('col2-value', 'Error loading issue');
-          setText('col3-value', 'Error loading issue');
-        });
-    }
-
-    document.addEventListener('DOMContentLoaded', function () {
-      setTimeout(function () { waitForContext(0); }, 200);
+    })
+    .catch(function(err) {
+      console.error('Error loading issue:', err);
+      for (var i = 1; i <= 5; i++) {
+        setText(`col1-r${i}-value`, 'Error loading issue');
+        setText(`col2-r${i}-value`, 'Error loading issue');
+        setText(`col3-r${i}-value`, 'Error loading issue');
+      }
     });
-  </script>
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    setTimeout(function () { waitForContext(0); }, 200);
+  });
+</script>
 </body>
 </html>
