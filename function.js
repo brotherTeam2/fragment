@@ -1,6 +1,8 @@
 // Отладочные логи
 console.log('Bridge:', window.AdaptavistBridge);
 console.log('BridgeContext raw:', window.AdaptavistBridgeContext);
+console.log('BridgeContext 2:', AdaptavistBridgeContext);
+
 
 // Универсальная установка текста
 function setText(id, text) {
