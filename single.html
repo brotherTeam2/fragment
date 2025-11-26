@@ -74,6 +74,7 @@ console.log('BridgeContext 2:', AdaptavistBridgeContext);
         type: 'GET'
       })
         .then(function (issue) {
+          console.log('Issue:', issue);  
           setText('col1-value', issue.key);
           setText('col2-value', issue.fields.status ? issue.fields.status.name : 'No status');
           setText('col3-value', issue.fields.assignee ? issue.fields.assignee.displayName : 'Unassigned');
