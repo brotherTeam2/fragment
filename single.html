@@ -5,17 +5,26 @@
   <title>Jira Issue Table Fragment</title>
   <script src="https://assets.hydrogen.sagittarius.connect.product.adaptavist.com/public/js/latest/bridge.js"></script>
   <style>
-    #issueTable {
-      border-collapse: collapse;
-      width: 100%;
-      font-family: Arial, sans-serif;
+    div {
+    width: 100%;
+    overflow-x: auto;
     }
+
+    #issueTable {
+    border-collapse: collapse;
+    width: 100%;
+    font-family: Arial, sans-serif;
+    }
+
     #issueTable th,
     #issueTable td {
-      border: 1px solid #ddd;
-      padding: 6px 10px;
-      text-align: left;
+    border: 1px solid #ddd;
+    padding: 6px 10px;
+    text-align: left;
+    word-break: break-word;
+    white-space: normal;
     }
+
     .col1 { background-color: #e6f4ff; }
     .col2 { background-color: #e8ffe6; }
     .col3 { background-color: #fff4e6; }
