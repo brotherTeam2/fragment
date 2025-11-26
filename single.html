@@ -8,26 +8,64 @@
     div {
     width: 100%;
     overflow-x: auto;
+    margin: 20px 0;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     }
 
     #issueTable {
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
     width: 100%;
-    font-family: Arial, sans-serif;
+    background: #fff;
+    box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
+    border-radius: 6px;
+    overflow: hidden;
     }
 
-    #issueTable th,
-    #issueTable td {
-    border: 1px solid #ddd;
-    padding: 6px 10px;
+    #issueTable th, #issueTable td {
+    padding: 12px 15px;
     text-align: left;
-    word-break: break-word;
-    white-space: normal;
+    white-space: nowrap;
+    vertical-align: middle;
     }
 
-    .col1 { background-color: #e6f4ff; }
-    .col2 { background-color: #e8ffe6; }
-    .col3 { background-color: #fff4e6; }
+    #issueTable thead {
+    background-color: #0052cc; /* Jira blue */
+    color: white;
+    font-weight: 600;
+    font-size: 14px;
+    }
+
+    #issueTable tbody tr {
+    border-bottom: 1px solid #e1e4e8;
+    transition: background-color 0.2s ease;
+    }
+
+    #issueTable tbody tr:hover {
+    background-color: #f4f5f7;
+    cursor: pointer;
+    }
+
+    #issueTable tbody td {
+    border-right: 1px solid #e1e4e8;
+    }
+
+    #issueTable tbody td:last-child {
+    border-right: none;
+    }
+
+    .col1 {
+    background-color: #f0f5ff; /* light blue tint */
+    font-weight: 500;
+    }
+
+    .col2 {
+    background-color: #e6f4ea; /* light green tint */
+    }
+
+    .col3 {
+    background-color: #fff8e1; /* light yellow tint */
+    }
   </style>
 </head>
 <body>
