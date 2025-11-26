@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Issue Roadmap</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #fff; margin: 0; padding: 30px; }
+    .roadmap { width: 100%; max-width: 1200px; margin: 0 auto; }
+    .roadmap-title { font-size: 2em; margin-bottom: 12px; }
+    .roadmap-bar {
+      display: flex; align-items: center; margin-bottom: 28px; margin-top:30px;
+    }
+    .roadmap-step {
+      display: flex; flex-direction: column; align-items: center; flex: 1;
+    }
+    .roadmap-circle {
+      width: 38px; height: 38px; border-radius: 50%; background: #cfcfcf; display: flex; align-items: center; justify-content: center;
+      border: 4px solid #cfcfcf;
+      font-size: 1.4em; color: #fff; position: relative;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .roadmap-circle.active {
+      background: #99e941;
+      border-color: #99e941;
+      color: #fff;
+      box-shadow: 0 0 0 2px #c9fda8;
+    }
+    .roadmap-check {
+      font-size: 1.35em; vertical-align: middle;
+    }
+    .roadmap-label {
+      margin-top: 8px; font-size: 1em; color: #222;
+      text-align: center; max-width: 140px;
+    }
+    .roadmap-line {
+      height: 9px; background: #cfcfcf; flex: 1;
+    }
+    .roadmap-line.active { background: #99e941; }
+    .roadmap-label.active { color: #99e941; font-weight: bold; }
+    /* List under arc */
+    #issueDetails { margin-top: 16px; }
+    .task-list { display: flex; align-items: flex-start; justify-content: space-between; margin-top: 14px;}
+    .task-col { flex: 1; padding: 0 12px;}
+    .task-col ul { margin:4px 0 0 18px; padding: 0; }
+    .task-col li { margin:4px 0; font-size: 1.02em; }
+    /* Responsive */
+    @media(max-width:900px) {
+      .roadmap-title { font-size: 1.3em;}
+      .task-col { font-size: 0.91em;}
+    }
+  </style>
+</head>
+<body>
+  <div class="roadmap">
+    <div class="roadmap-title">Analysis and Ownership</div>
+    <div id="issueProgress"></div>
+    <div id="issueDetails"></div>
+  </div>
+  <script>
+    // Utility for rendering
+    function el(tag, props, ...children) {
+      var e = document.createElement(tag);
+      for (var k in props) e[k] = props[k];
+      children.forEach(function(c){ if (c) e.appendChild(c); });
+      return e;
+    }
+
+    // Main logic
+    function setContent(issue, related) {
+      // related: {parents: [], subtasks: []}
+      var progress = [];
+      var labels = [];
+
+      // Build steps = [parents..., current, subtasks...]
+      if (related.parents.length) {
+        related.parents.forEach(function(p){ progress.push({ key:p.key, summary:p.fields.summary, active:false }); labels.push(p.fields.summary); });
+      }
+      progress.push({ key: issue.key, summary: issue.fields.summary, active:true }); labels.push(issue.fields.summary);
+      if (related.subtasks.length) {
+        related.subtasks.forEach(function(s){ progress.push({ key:s.key, summary:s.fields.summary, active:false }); labels.push(s.fields.summary); });
+      }
+
+      // Render arc-progress-bar
+      var bar = el('div', {className:'roadmap-bar'});
+      progress.forEach(function(step,i){
+        var active = step.active;
+        var stepDiv = el('div', {className:'roadmap-step'});
+        var circle = el('div', {className:'roadmap-circle'+(active?' active':'')}, active ? el('span',{className:'roadmap-check'},'✔') : document.createTextNode(''));
+        circle.title = step.key;
+        stepDiv.appendChild(circle);
+        if (i !== progress.length-1) {
+          var line = el('div',{className:'roadmap-line'+(active?' active':'')});
+          stepDiv.appendChild(line);
+        }
+        bar.appendChild(stepDiv);
+      });
+
+      // Render labels below bar
+      var labelsDiv = el("div",{className:"task-list"});
+      progress.forEach(function(step){
+        var col = el('div',{className:'task-col'});
+        var lbl = el('div',{className:'roadmap-label'+(step.active?' active':''), title:step.key},step.summary);
+        col.appendChild(lbl);
+        labelsDiv.appendChild(col);
+      });
+
+      // Detail lists for parents/subtasks
+      var detailsDiv = el("div",{});
+      if (related.parents.length) {
+        var ul = el("ul",{});
+        related.parents.forEach(function(p){ ul.appendChild(el("li",{},p.fields.summary+' ('+p.key+')'));});
+        detailsDiv.appendChild(el("div",{}, el("b",{},"Parent issues:"), ul));
+      }
+      if (related.subtasks.length) {
+        var ul2 = el("ul",{});
+        related.subtasks.forEach(function(s){ ul2.appendChild(el("li",{},s.fields.summary+' ('+s.key+')'));});
+        detailsDiv.appendChild(el("div",{}, el("b",{},"Subtasks:"), ul2));
+      }
+
+      // Attach to dom
+      var prg = document.getElementById("issueProgress");
+      prg.innerHTML = "";
+      prg.appendChild(bar);
+      prg.appendChild(labelsDiv);
+      document.getElementById("issueDetails").innerHTML = "";
+      document.getElementById("issueDetails").appendChild(detailsDiv);
+    }
+
+    // REST helpers
+    function fetchIssue(key, cb) {
+      window.AdaptavistBridge.request({
+        url: `/rest/api/2/issue/${key}`,
+        type: 'GET'
+      }).then(function(issue){ cb(issue); });
+    }
+
+    function main() {
+      // Get current issueKey from BridgeContext (with fallback)
+      var ctx = window.AdaptavistBridgeContext && window.AdaptavistBridgeContext.context || {};
+      var issueKey = ctx.issueKey || (window.location.pathname.match(/browse\/([A-Z0-9\-]+)/)||[])[1] || "AP-1";
+      fetchIssue(issueKey,function(issue){
+        // Parents (epic/parent/linked issues — basic: parent/subtasks)
+        var parents = [];
+        if (issue.fields.parent) {
+          parents.push(issue.fields.parent);
+        }
+        // Subtasks
+        var subtasks = [];
+        if (issue.fields.subtasks && issue.fields.subtasks.length) {
+          subtasks = issue.fields.subtasks;
+        }
+
+        // If parent keys present, fetch full details
+        var loadedParents=[];
+        var loadedSubs=[];
+        var needParents = parents.map(p=>p.key);
+        var needSubs = subtasks.map(s=>s.key);
+
+        let counter = needParents.length + needSubs.length;
+        if(counter==0){ setContent(issue,{parents:[],subtasks:[]}); return; }
+        // Fetch all parents/subtasks full info
+        if (needParents.length) {
+          needParents.forEach(function(pk){
+            fetchIssue(pk,function(data){
+              loadedParents.push(data);
+              counter--; if(counter==0) setContent(issue,{parents:loadedParents,subtasks:loadedSubs});
+            });
+          });
+        }
+        if (needSubs.length) {
+          needSubs.forEach(function(sk){
+            fetchIssue(sk,function(data){
+              loadedSubs.push(data);
+              counter--; if(counter==0) setContent(issue,{parents:loadedParents,subtasks:loadedSubs});
+            });
+          });
+        }
+      });
+    }
+
+    // Wait for bridge context
+    document.addEventListener("DOMContentLoaded", function(){
+      function waitContext(i){ 
+        if(window.AdaptavistBridge && window.AdaptavistBridgeContext){ main(); return; }
+        if(i>30) { document.body.innerHTML = "Could not load issue context."; return;}
+        setTimeout(function(){waitContext(i+1);},100);
+      }
+      waitContext(0);
+    });
+
+  </script>
+</body>
+</html>
