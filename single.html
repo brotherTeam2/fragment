@@ -107,16 +107,37 @@
       var links = issue.fields.issuelinks || [];
       for (var i = 0; i < 5; i++) {
         if (links[i] && links[i].outwardIssue) {
-          var linkedIssue = links[i].outwardIssue;
-          setText(`col1-r${i+1}-value`, linkedIssue.fields.summary || 'No summary');
-          setText(`col2-r${i+1}-value`, linkedIssue.fields.assignee ? linkedIssue.fields.assignee.displayName : 'Unassigned');
-          setText(`col3-r${i+1}-value`, linkedIssue.fields.status ? linkedIssue.fields.status.name : 'No status');
+            (function(index) {
+            var linkedIssue = links[index].outwardIssue;
+            setText(`col1-r${index+1}-value`, linkedIssue.fields.summary || 'No summary');
+            setText(`col2-r${index+1}-value`, linkedIssue.fields.assignee ? linkedIssue.fields.assignee.displayName : 'Unassigned');
+
+            AdaptavistBridge.request({
+                url: `/rest/api/2/issue/${linkedIssue.key}`,
+                type: 'GET'
+            })
+            .then(function(detailedIssue) {
+                var subtasks = detailedIssue.fields.subtasks || [];
+                if (subtasks.length === 0) {
+                setText(`col3-r${index+1}-value`, linkedIssue.fields.status ? linkedIssue.fields.status.name : 'No status');
+                } else {
+                var subtaskStatuses = subtasks.map(function(subtask) {
+                    return subtask.fields.status ? subtask.fields.status.name : 'No status';
+                });
+                setText(`col3-r${index+1}-value`, subtaskStatuses.join(', '));
+                }
+            })
+            .catch(function(err) {
+                setText(`col3-r${index+1}-value`, 'Ошибка загрузки сабтасок');
+            });
+            })(i);
         } else {
-          setText(`col1-r${i+1}-value`, 'No linked issue');
-          setText(`col2-r${i+1}-value`, '');
-          setText(`col3-r${i+1}-value`, '');
+            setText(`col1-r${i+1}-value`, 'No linked issue');
+            setText(`col2-r${i+1}-value`, '');
+            setText(`col3-r${i+1}-value`, '');
         }
-      }
+    }
+
     })
     .catch(function(err) {
       console.error('Error loading issue:', err);
