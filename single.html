@@ -93,6 +93,7 @@
     })
     .then(function(issue) {
       console.log('Issue:', issue);
+      console.log('Links:', issue.issuelinks);
 
       var links = issue.issuelinks || [];
       for (var i = 0; i < 5; i++) {
