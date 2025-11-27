@@ -162,6 +162,7 @@
                 var subtasks = detailedIssue.fields.subtasks || [];
                 if (subtasks.length === 0) {
                 setText(`col3-r${index+1}-value`, linkedIssue.fields.status ? linkedIssue.fields.status.name : 'No status');
+                var statusText = linkedIssue.fields.status ? linkedIssue.fields.status.name : 'No status';
                 var cell = document.getElementById(`col3-r${index+1}-value`);
                   console.log('Cell for coloring:', cell, 'Status:', statusText || statusesText);
                   if (cell) {
