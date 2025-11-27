@@ -66,6 +66,13 @@
     .col3 {
     background-color: #ffffff; /* light yellow tint */
     }
+    .status-approved {
+      background-color: #d4edda; /* green-ish */
+    }
+
+    .status-declined {
+      background-color: #f8d7da; /* red-ish */
+    }
   </style>
 </head>
 <body>
@@ -115,16 +122,20 @@
   }
   function setCellColor(cellId, statusText) {
     var cell = document.getElementById(cellId);
-    console.log('Setting color for', cellId, 'Status:', statusText, 'Cell found:', !!cell);
-    
-    if (cell && statusText) {
-      if (statusText === 'Approved') {
-        cell.style.backgroundColor = '#d4edda !important'; // светло-зеленый
-      } else if (statusText === 'Declined') {
-        cell.style.backgroundColor = '#f8d7da !important'; // светло-красный
-      } else {
-        cell.style.backgroundColor = ''; // сбрасываем inline стиль
-      }
+    console.log('Setting color for', cellId, 'Status raw:', statusText, 'Cell found:', !!cell);
+
+    if (!cell || !statusText) return;
+
+    // очищаем старые классы
+    cell.classList.remove('status-approved', 'status-declined');
+
+    var normalized = String(statusText).toLowerCase().trim();
+    console.log('Status normalized:', normalized);
+
+    if (normalized.includes('approved')) {
+      cell.classList.add('status-approved');
+    } else if (normalized.includes('declined') || normalized.includes('rejected')) {
+      cell.classList.add('status-declined');
     }
   }
 
@@ -175,19 +186,17 @@
             .then(function(detailedIssue) {
               var subtasks = detailedIssue.fields.subtasks || [];
               if (subtasks.length === 0) {
-                var statusText = linkedIssue.fields.status ? linkedIssue.fields.status.name : 'No status';
-                setText(`col3-r${index+1}-value`, statusText);
-                // Вызываем сразу после установки текста
-                setCellColor(`col3-r${index+1}-value`, statusText);
-              } else {
-                var subtaskStatuses = subtasks.map(function(subtask) {
-                  return subtask.fields.status ? subtask.fields.status.name : 'No status';
-                });
-                var statusesText = subtaskStatuses.join(', ');
-                setText(`col3-r${index+1}-value`, statusesText);
-                // Проверяем только первый статус для цвета или все сразу
-                setCellColor(`col3-r${index+1}-value`, statusesText);
-              }
+              var statusText = linkedIssue.fields.status ? linkedIssue.fields.status.name : 'No status';
+              setText(`col3-r${index+1}-value`, statusText);
+              setCellColor(`col3-r${index+1}-value`, statusText);
+            } else {
+              var subtaskStatuses = subtasks.map(function(subtask) {
+                return subtask.fields.status ? subtask.fields.status.name : 'No status';
+              });
+              var statusesText = subtaskStatuses.join(', ');
+              setText(`col3-r${index+1}-value`, statusesText);
+              setCellColor(`col3-r${index+1}-value`, statusesText);
+            }
             })
             .catch(function(err) {
                 setText(`col3-r${index+1}-value`, "Can't fins sub-task");
