@@ -163,13 +163,18 @@
                 if (subtasks.length === 0) {
                 setText(`col3-r${index+1}-value`, linkedIssue.fields.status ? linkedIssue.fields.status.name : 'No status');
                 var cell = document.getElementById(`col3-r${index+1}-value`);
-                    if (cell) {
-                      if (statusText === 'Approved') {
+                  console.log('Cell for coloring:', cell, 'Status:', statusText || statusesText);
+                  if (cell) {
+                    setTimeout(function() {
+                      if ((statusText || statusesText) === 'Approved') {
                         cell.style.backgroundColor = 'green';
-                      } else if (statusText === 'Declined') {
+                      } else if ((statusText || statusesText) === 'Declined') {
                         cell.style.backgroundColor = 'red';
+                      } else {
+                        cell.style.backgroundColor = ''; // сброс стиля, если нужно
                       }
-                    }
+                    }, 20);
+                  }
                 } else {
                 var subtaskStatuses = subtasks.map(function(subtask) {
                     return subtask.fields.status ? subtask.fields.status.name : 'No status';
