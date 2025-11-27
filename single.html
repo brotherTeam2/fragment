@@ -113,6 +113,20 @@
     var el = document.getElementById(id);
     if (el) el.textContent = text;
   }
+  function setCellColor(cellId, statusText) {
+    var cell = document.getElementById(cellId);
+    console.log('Setting color for', cellId, 'Status:', statusText, 'Cell found:', !!cell);
+    
+    if (cell && statusText) {
+      if (statusText === 'Approved') {
+        cell.style.backgroundColor = '#d4edda !important'; // светло-зеленый
+      } else if (statusText === 'Declined') {
+        cell.style.backgroundColor = '#f8d7da !important'; // светло-красный
+      } else {
+        cell.style.backgroundColor = ''; // сбрасываем inline стиль
+      }
+    }
+  }
 
   function waitForContext(tries) {
     tries = tries || 0;
@@ -159,29 +173,21 @@
                 type: 'GET'
             })
             .then(function(detailedIssue) {
-                var subtasks = detailedIssue.fields.subtasks || [];
-                if (subtasks.length === 0) {
-                setText(`col3-r${index+1}-value`, linkedIssue.fields.status ? linkedIssue.fields.status.name : 'No status');
+              var subtasks = detailedIssue.fields.subtasks || [];
+              if (subtasks.length === 0) {
                 var statusText = linkedIssue.fields.status ? linkedIssue.fields.status.name : 'No status';
-                var cell = document.getElementById(`col3-r${index+1}-value`);
-                  console.log('Cell for coloring:', cell, 'Status:', statusText || statusesText);
-                  if (cell) {
-                    setTimeout(function() {
-                      if ((statusText || statusesText) === 'Approved') {
-                        cell.style.backgroundColor = 'green';
-                      } else if ((statusText || statusesText) === 'Declined') {
-                        cell.style.backgroundColor = 'red';
-                      } else {
-                        cell.style.backgroundColor = ''; // сброс стиля, если нужно
-                      }
-                    }, 20);
-                  }
-                } else {
+                setText(`col3-r${index+1}-value`, statusText);
+                // Вызываем сразу после установки текста
+                setCellColor(`col3-r${index+1}-value`, statusText);
+              } else {
                 var subtaskStatuses = subtasks.map(function(subtask) {
-                    return subtask.fields.status ? subtask.fields.status.name : 'No status';
+                  return subtask.fields.status ? subtask.fields.status.name : 'No status';
                 });
-                setText(`col3-r${index+1}-value`, subtaskStatuses.join(', '));
-                }
+                var statusesText = subtaskStatuses.join(', ');
+                setText(`col3-r${index+1}-value`, statusesText);
+                // Проверяем только первый статус для цвета или все сразу
+                setCellColor(`col3-r${index+1}-value`, statusesText);
+              }
             })
             .catch(function(err) {
                 setText(`col3-r${index+1}-value`, "Can't fins sub-task");
