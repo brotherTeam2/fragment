@@ -60,11 +60,11 @@
     }
 
     .col2 {
-    background-color: #e6f4ea; /* light green tint */
+    background-color: #c4e7df; /* light green tint */
     }
 
     .col3 {
-    background-color: #fff8e1; /* light yellow tint */
+    background-color: #ffffff; /* light yellow tint */
     }
   </style>
 </head>
@@ -142,13 +142,17 @@
       console.log('Issue:', issue);
       console.log('Links:', issue.issuelinks);
 
+      var assignees = ['Arevshatyan Levon', 'Arkhipova Maria', 'Armanuly Hemalatha', 'Artemenko Yerlen', 'Artsiukh Olena'];
+
       var links = issue.fields.issuelinks || [];
       for (var i = 0; i < 5; i++) {
         if (links[i] && links[i].outwardIssue) {
             (function(index) {
             var linkedIssue = links[index].outwardIssue;
             setText(`col1-r${index+1}-value`, linkedIssue.fields.summary || 'No summary');
-            setText(`col2-r${index+1}-value`, linkedIssue.fields.assignee ? linkedIssue.fields.assignee.displayName : 'Unassigned');
+
+            var assigneeName = assignees[index] || 'Unassigned';
+            setText(`col2-r${index+1}-value`, assigneeName);
 
             AdaptavistBridge.request({
                 url: `/rest/api/2/issue/${linkedIssue.key}`,
@@ -158,6 +162,14 @@
                 var subtasks = detailedIssue.fields.subtasks || [];
                 if (subtasks.length === 0) {
                 setText(`col3-r${index+1}-value`, linkedIssue.fields.status ? linkedIssue.fields.status.name : 'No status');
+                var cell = document.getElementById(`col3-r${index+1}-value`);
+                    if (cell) {
+                      if (statusText === 'Approved') {
+                        cell.style.backgroundColor = 'green';
+                      } else if (statusText === 'Declined') {
+                        cell.style.backgroundColor = 'red';
+                      }
+                    }
                 } else {
                 var subtaskStatuses = subtasks.map(function(subtask) {
                     return subtask.fields.status ? subtask.fields.status.name : 'No status';
@@ -166,7 +178,7 @@
                 }
             })
             .catch(function(err) {
-                setText(`col3-r${index+1}-value`, 'Ошибка загрузки сабтасок');
+                setText(`col3-r${index+1}-value`, "Can't fins sub-task");
             });
             })(i);
         } else {
